@@ -7,7 +7,8 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import HtmlHelpers
 import Lamdera
-import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
+import Time
+import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..), keepAliveInterval)
 import Url exposing (Url)
 
 
@@ -23,7 +24,11 @@ app =
         , onUrlChange = UrlChanged
         , update = update
         , updateFromBackend = updateFromBackend
-        , subscriptions = always Sub.none
+        , subscriptions =
+            always <|
+                Sub.batch
+                    [ Time.every keepAliveInterval (always KeepAlive)
+                    ]
         , view = view
         }
 
@@ -44,7 +49,7 @@ update msg model =
         UrlClicked urlRequest ->
             case urlRequest of
                 Internal url ->
-                    ( model
+                    ( { model | activePath = url.query }
                     , Nav.pushUrl model.key (Url.toString url)
                     )
 
@@ -53,8 +58,11 @@ update msg model =
                     , Nav.load url
                     )
 
-        UrlChanged url ->
-            ( { model | activePath = url.query }, Cmd.none )
+        UrlChanged _ ->
+            ( model, Cmd.none )
+
+        KeepAlive ->
+            ( model, Lamdera.sendToBackend (FrontendHeartbeat model.activePath) )
 
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )

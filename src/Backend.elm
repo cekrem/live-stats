@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Lamdera exposing (ClientId, SessionId)
 import Task
 import Time
-import Types exposing (BackendModel, BackendMsg(..), Entry, ToBackend(..), ToFrontend(..))
+import Types exposing (BackendModel, BackendMsg(..), Entry, ToBackend(..), ToFrontend(..), computeStatsInterval, maxSessionAge)
 
 
 
@@ -25,7 +25,7 @@ app =
             always <|
                 Sub.batch
                     [ Lamdera.onDisconnect <| always ClientDisconnected
-                    , Time.every 5000 Tick
+                    , Time.every computeStatsInterval Tick
                     ]
         }
 
@@ -47,7 +47,7 @@ update msg model =
         Tick now ->
             let
                 isProbablyStillConnected { timestamp } =
-                    Time.posixToMillis timestamp > Time.posixToMillis now - 20000
+                    Time.posixToMillis timestamp > Time.posixToMillis now - maxSessionAge
 
                 prunedModel =
                     { model

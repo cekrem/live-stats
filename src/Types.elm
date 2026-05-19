@@ -1,4 +1,4 @@
-module Types exposing (BackendModel, BackendMsg(..), Entry, FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
+module Types exposing (BackendModel, BackendMsg(..), Entry, FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..), computeStatsInterval, keepAliveInterval, maxSessionAge)
 
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
@@ -6,6 +6,10 @@ import Dict exposing (Dict)
 import Lamdera exposing (ClientId)
 import Time
 import Url exposing (Url)
+
+
+
+-- model
 
 
 type alias FrontendModel =
@@ -27,7 +31,8 @@ type alias Entry =
 
 
 type FrontendMsg
-    = UrlClicked UrlRequest
+    = KeepAlive
+    | UrlClicked UrlRequest
     | UrlChanged Url
 
 
@@ -43,3 +48,22 @@ type BackendMsg
 
 type ToFrontend
     = StatsBroadcast (Dict String Int)
+
+
+
+-- time constants
+
+
+keepAliveInterval : number
+keepAliveInterval =
+    15000
+
+
+computeStatsInterval : number
+computeStatsInterval =
+    5000
+
+
+maxSessionAge : number
+maxSessionAge =
+    20000
