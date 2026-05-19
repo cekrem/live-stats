@@ -118,8 +118,8 @@ viewSingleEntry n =
         [ Attr.href "https://livestats.lamdera.app"
         , Attr.target "_top"
         ]
-        [ Html.text "Number of people reading this post right now: "
-        , Html.text <| String.fromInt n
+        [ Html.text <| String.fromInt n
+        , Html.text " people reading this post right now"
         ]
 
 
