@@ -1,0 +1,101 @@
+module Frontend exposing (Model, app)
+
+import Browser exposing (UrlRequest(..))
+import Browser.Navigation as Nav
+import Dict exposing (Dict)
+import Html exposing (Html)
+import Html.Attributes as Attr
+import HtmlHelpers
+import Lamdera
+import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
+import Url exposing (Url)
+
+
+type alias Model =
+    FrontendModel
+
+
+app : { init : Lamdera.Url -> Nav.Key -> ( Model, Cmd FrontendMsg ), view : Model -> Browser.Document FrontendMsg, update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg ), updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg ), subscriptions : Model -> Sub FrontendMsg, onUrlRequest : UrlRequest -> FrontendMsg, onUrlChange : Url.Url -> FrontendMsg }
+app =
+    Lamdera.frontend
+        { init = init
+        , onUrlRequest = UrlClicked
+        , onUrlChange = UrlChanged
+        , update = update
+        , updateFromBackend = updateFromBackend
+        , subscriptions = always Sub.none
+        , view = view
+        }
+
+
+init : Url -> Nav.Key -> ( Model, Cmd FrontendMsg )
+init url key =
+    ( { key = key
+      , stats = Nothing
+      , activePath = url.query
+      }
+    , Lamdera.sendToBackend (FrontendHeartbeat url.query)
+    )
+
+
+update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
+update msg model =
+    case msg of
+        UrlClicked urlRequest ->
+            case urlRequest of
+                Internal url ->
+                    ( model
+                    , Nav.pushUrl model.key (Url.toString url)
+                    )
+
+                External url ->
+                    ( model
+                    , Nav.load url
+                    )
+
+        UrlChanged url ->
+            ( { model | activePath = url.query }, Cmd.none )
+
+
+updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
+updateFromBackend msg model =
+    case msg of
+        StatsBroadcast stats ->
+            ( { model | stats = Just stats }, Cmd.none )
+
+
+view : Model -> Browser.Document FrontendMsg
+view model =
+    { title = "Live Stats!"
+    , body =
+        case ( model.stats, model.activePath ) of
+            ( Nothing, _ ) ->
+                []
+
+            ( Just stats, Nothing ) ->
+                [ viewDashboard stats ]
+
+            ( Just stats, Just activePath ) ->
+                [ HtmlHelpers.maybeNode viewSingleEntry (stats |> Dict.get activePath)
+                ]
+    }
+
+
+viewDashboard : Dict String Int -> Html msg
+viewDashboard stats =
+    Html.ul []
+        (stats
+            |> Dict.toList
+            |> List.map
+                (\( slug, n ) ->
+                    Html.li [ Attr.class "flex justify-between" ]
+                        [ Html.h3 [ Attr.class "text-xl" ] [ Html.text slug ]
+                        , Html.h5 [ Attr.class "text-lg" ] [ Html.text (String.fromInt n) ]
+                        ]
+                )
+        )
+
+
+viewSingleEntry : Int -> Html msg
+viewSingleEntry n =
+    Html.h1 [ Attr.class "text-center text-2xl" ] [ Html.text <| String.fromInt n ]
