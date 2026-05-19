@@ -81,7 +81,7 @@ view model =
                 []
 
             ( Just stats, Nothing ) ->
-                [ viewDashboard stats ]
+                [ viewDashboard stats, viewFooter ]
 
             ( Just stats, Just activePath ) ->
                 [ HtmlHelpers.maybeNode viewSingleEntry (stats |> Dict.get activePath)
@@ -91,29 +91,42 @@ view model =
 
 viewDashboard : Dict String Int -> Html msg
 viewDashboard stats =
-    Html.ul []
-        (Html.h1 [ Attr.class "text-center text-xl" ] [ Html.text "Live Dashboard" ]
-            :: (stats
-                    |> Dict.toList
-                    |> List.map
-                        (\( slug, n ) ->
-                            Html.li [ Attr.class "flex justify-center gap-4" ]
-                                [ Html.p [] [ Html.text slug ]
-                                , Html.p [] [ Html.text ":" ]
-                                , Html.p [] [ Html.text (String.fromInt n) ]
-                                ]
-                        )
-               )
-        )
+    Html.table []
+        [ Html.tbody []
+            (Html.tr
+                []
+                [ Html.th [] [ Html.text "path" ]
+                , Html.th [] [ Html.text "visitors" ]
+                ]
+                :: (stats
+                        |> Dict.toList
+                        |> List.map
+                            (\( slug, n ) ->
+                                Html.tr []
+                                    [ Html.td [] [ Html.text slug ]
+                                    , Html.td [] [ Html.text (String.fromInt n) ]
+                                    ]
+                            )
+                   )
+            )
+        ]
 
 
 viewSingleEntry : Int -> Html msg
 viewSingleEntry n =
     Html.a
-        [ Attr.class "font-mono"
-        , Attr.href "https://livestats.lamdera.app"
+        [ Attr.href "https://livestats.lamdera.app"
         , Attr.target "_top"
         ]
-        [ Html.text "reading this post right now: "
+        [ Html.text "People currently reading this post: "
         , Html.text <| String.fromInt n
+        ]
+
+
+viewFooter : Html msg
+viewFooter =
+    Html.footer []
+        [ Html.a [ Attr.href "https://cekrem.github.io" ] [ Html.text "made by cekrem" ]
+        , Html.text " · "
+        , Html.a [ Attr.href "https://github.com/cekrem/live-stats" ] [ Html.text "source" ]
         ]
