@@ -92,18 +92,27 @@ view model =
 viewDashboard : Dict String Int -> Html msg
 viewDashboard stats =
     Html.ul []
-        (stats
-            |> Dict.toList
-            |> List.map
-                (\( slug, n ) ->
-                    Html.li [ Attr.class "flex justify-between" ]
-                        [ Html.h3 [ Attr.class "text-xl" ] [ Html.text slug ]
-                        , Html.h5 [ Attr.class "text-lg" ] [ Html.text (String.fromInt n) ]
-                        ]
-                )
+        (Html.h1 [ Attr.class "text-center text-xl" ] [ Html.text "Live Dashboard" ]
+            :: (stats
+                    |> Dict.toList
+                    |> List.map
+                        (\( slug, n ) ->
+                            Html.li [ Attr.class "flex justify-center gap-4" ]
+                                [ Html.p [] [ Html.text slug ]
+                                , Html.p [] [ Html.text ":" ]
+                                , Html.p [] [ Html.text (String.fromInt n) ]
+                                ]
+                        )
+               )
         )
 
 
 viewSingleEntry : Int -> Html msg
 viewSingleEntry n =
-    Html.h1 [ Attr.class "text-center text-2xl" ] [ Html.text <| String.fromInt n ]
+    Html.a
+        [ Attr.class "font-mono"
+        , Attr.href "https://livestats.lamdera.app"
+        ]
+        [ Html.text "reading this post right now: "
+        , Html.text <| String.fromInt n
+        ]
