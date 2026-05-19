@@ -112,6 +112,7 @@ viewSingleEntry n =
     Html.a
         [ Attr.class "font-mono"
         , Attr.href "https://livestats.lamdera.app"
+        , Attr.target "_top"
         ]
         [ Html.text "reading this post right now: "
         , Html.text <| String.fromInt n
