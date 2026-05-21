@@ -95,15 +95,16 @@ viewDashboard stats =
         [ Html.tbody []
             (Html.tr
                 []
-                [ Html.th [] [ Html.text "path" ]
+                [ Html.th [] [ Html.text "url" ]
                 , Html.th [] [ Html.text "visitors" ]
                 ]
                 :: (stats
                         |> Dict.toList
+                        |> List.sortBy (negate << Tuple.second)
                         |> List.map
-                            (\( slug, n ) ->
+                            (\( url, n ) ->
                                 Html.tr []
-                                    [ Html.td [] [ Html.text slug ]
+                                    [ Html.td [] [ Html.a [ Attr.href url ] [ Html.text url ] ]
                                     , Html.td [] [ Html.text (String.fromInt n) ]
                                     ]
                             )
