@@ -65,8 +65,8 @@ update msg model =
         ClientDisconnected clientId ->
             ( { model | stats = model.stats |> Dict.remove clientId }, Cmd.none )
 
-        ClientAlive Nothing _ _ ->
-            broadcastStats model
+        ClientAlive Nothing clientId _ ->
+            sendStatsToClient clientId model
 
         ClientAlive (Just slug) clientId timestamp ->
             let
@@ -103,6 +103,11 @@ updateFromFrontend _ clientId msg model =
 broadcastStats : { a | stats : Dict k Entry } -> ( { a | stats : Dict k Entry }, Cmd BackendMsg )
 broadcastStats model =
     ( model, Lamdera.broadcast <| StatsBroadcast (model |> computedStats) )
+
+
+sendStatsToClient : ClientId -> { a | stats : Dict k Entry } -> ( { a | stats : Dict k Entry }, Cmd backendMsg )
+sendStatsToClient clientId model =
+    ( model, Lamdera.sendToFrontend clientId <| StatsBroadcast (model |> computedStats) )
 
 
 computedStats : { a | stats : Dict k Entry } -> Dict String Int
