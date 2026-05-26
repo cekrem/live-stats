@@ -108,6 +108,7 @@ viewDashboard stats =
                 :: (stats
                         |> Dict.toList
                         |> List.sortBy (negate << Tuple.second)
+                        |> List.take 10
                         |> List.map
                             (\( url, n ) ->
                                 Html.tr []
