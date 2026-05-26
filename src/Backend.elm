@@ -75,12 +75,22 @@ update msg model =
                         | stats =
                             model.stats
                                 |> Dict.insert clientId
-                                    { slug = slug
+                                    { slug = prefixOldSlug slug
                                     , timestamp = timestamp
                                     }
                     }
             in
             broadcastStats newModel
+
+
+prefixOldSlug : String -> String
+prefixOldSlug slug =
+    -- Apparently someone with weird cache settings keep visiting my blog:
+    if String.startsWith "/posts" slug then
+        "https://cekrem.github.io" ++ slug
+
+    else
+        slug
 
 
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
