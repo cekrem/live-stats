@@ -46,14 +46,18 @@ update msg model =
     case msg of
         Tick now ->
             let
-                isProbablyStillConnected { timestamp } =
+                isProbablyStillConnected _ { timestamp } =
                     Time.posixToMillis timestamp > Time.posixToMillis now - maxSessionAge
+
+                isValidUrl _ { slug } =
+                    String.startsWith "http" slug
 
                 prunedModel =
                     { model
                         | stats =
                             model.stats
-                                |> Dict.filter (always isProbablyStillConnected)
+                                |> Dict.filter isValidUrl
+                                |> Dict.filter isProbablyStillConnected
                     }
             in
             broadcastStats prunedModel
@@ -98,7 +102,6 @@ computedStats model =
         incrementSlug slug =
             Dict.update slug (Maybe.withDefault 0 >> (+) 1 >> Just)
     in
-    (model.stats
+    model.stats
         |> Dict.map (always .slug)
-    )
         |> Dict.foldl (always incrementSlug) Dict.empty
