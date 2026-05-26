@@ -119,9 +119,15 @@ viewSingleEntry n =
         [ Attr.href "https://livestats.lamdera.app"
         , Attr.target "_top"
         ]
-        [ Html.text <| String.fromInt n
-        , Html.text " people reading this post right now"
-        ]
+        (case n of
+            1 ->
+                [ Html.text "One person reading this right now" ]
+
+            many ->
+                [ Html.text <| String.fromInt many
+                , Html.text " people reading this right now"
+                ]
+        )
 
 
 viewFooter : Html msg
