@@ -93,11 +93,18 @@ viewDashboard : Dict String Int -> Html msg
 viewDashboard stats =
     Html.table []
         [ Html.tbody []
-            (Html.tr
-                []
-                [ Html.th [] [ Html.text "url" ]
-                , Html.th [] [ Html.text "visitors" ]
+            (Html.tr []
+                [ Html.th [ Attr.colspan 2 ]
+                    [ Html.text "cekrem's top 10"
+                    , Html.text " "
+                    , Html.i [] [ Html.text "right now" ]
+                    ]
                 ]
+                :: Html.tr
+                    []
+                    [ Html.th [] [ Html.text "url" ]
+                    , Html.th [] [ Html.text "visitors" ]
+                    ]
                 :: (stats
                         |> Dict.toList
                         |> List.sortBy (negate << Tuple.second)
